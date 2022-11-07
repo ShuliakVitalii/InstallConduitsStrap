@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AdWindows">
+      <HintPath>D:\Program Files\Autodesk\Revit 2021\AdWindows.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="RevitAPI">
       <HintPath>D:\Program Files\Autodesk\Revit 2021\RevitAPI.dll</HintPath>
@@ -56,12 +59,15 @@
     <Compile Include="Common\RevitMessage.cs" />
     <Compile Include="Common\WindowType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RevitUI\RibbonPanelOverrides.cs" />
+    <Compile Include="Tools\InstallStrap.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="InstallConduitsStrap.addin" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Icons" />
+    <EmbeddedResource Include="Icons\install_16px.png" />
+    <EmbeddedResource Include="Icons\install_32px.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
