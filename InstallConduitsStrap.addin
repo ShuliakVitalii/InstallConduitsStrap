@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type="Application">
+		<Name>InstallConduitsStrap</Name>
+		<Assembly>InstallConduitsStrap.dll</Assembly>
+		<FullClassName>InstallConduitsStrap.App</FullClassName>
+		<ClientId>f64cbd39-8a02-4bc4-9ae3-d9690fcfd56a</ClientId>
+		<VendorId>Vitalii Shuliak</VendorId>
+	</AddIn>
+</RevitAddIns>
