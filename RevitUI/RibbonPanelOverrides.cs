@@ -37,7 +37,7 @@ namespace InstallConduitsStrap.RevitUI
 
 
             ribbonPanels.FirstOrDefault(x => x.Source.Name == "Install")
-                .CustomPanelTitleBarBackground = new SolidColorBrush(Colors.DarkOliveGreen);
+                .CustomPanelTitleBarBackground = new SolidColorBrush(Colors.OrangeRed);
             ribbonPanels.FirstOrDefault(x => x.Source.Name == "Install")
                 .CustomPanelTitleBarBackground.Opacity = 0.2;
 
