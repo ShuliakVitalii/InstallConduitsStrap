@@ -21,8 +21,8 @@ namespace InstallConduitsStrap
                 "Install Conduits \n Strap", path,
                 typeof(Tools.InstallStrap).FullName)
             {
-                LargeImage = Common.IconManager.GetIcon("install_32px.png"),
-                Image = Common.IconManager.GetIcon("install_16px.png")
+                LargeImage = Common.IconManager.GetIcon("install_32px.ico"),
+                Image = Common.IconManager.GetIcon("install_16px.ico")
             };
 
             #endregion
