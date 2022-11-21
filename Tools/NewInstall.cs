@@ -15,7 +15,7 @@ namespace InstallConduitsStrap.Tools
 {
     [Transaction(TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    public class InstallStrap : IExternalCommand
+    public class NewInstall : IExternalCommand
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -24,92 +24,53 @@ namespace InstallConduitsStrap.Tools
             Application app = uiapp.Application;
             Document doc = uidoc.Document;
 
-
             try
             {
-                /*var sheet = new FilteredElementCollector(doc).OfClass(typeof(View)).Where(a => a.Name == "Test").First();
-                uidoc.ActiveView = sheet as View;*/
-
                 var sheet = uidoc.ActiveView;
-
-
                 FilteredElementCollector conduintsFilter = new FilteredElementCollector(doc, sheet.Id);
-
-
-                IList<Element> efCs = FindElement(doc, sheet.Id, typeof(FamilyInstance), "MM_StrutClearance");
+                IList<Element> strutElements = FindElement(doc, sheet.Id, typeof(FamilyInstance), "MM_StrutClearance");
+                IList<Element> conduintsElements = conduintsFilter.OfCategory(BuiltInCategory.OST_Conduit)
+                    .WhereElementIsNotElementType().ToElements();
 
                 using (TransactionGroup transactionGroup = new TransactionGroup(doc, "Using plagin Install Strap"))
                 {
                     transactionGroup.Start();
 
-                    // #region Delete
-                    //
-                    // IList<Element> fittings = FindElement(doc, sheet.Id, typeof(FamilyInstance), "Standard");
-                    //
-                    // IList<ElementId> deletEl = new List<ElementId>();
-                    // if (fittings != null)
-                    // {
-                    //     foreach (Element e in fittings)
-                    //     {
-                    //         deletEl.Add(e.Id);
-                    //     }
-                    // }
-                    //
-                    // using (Transaction t = new Transaction(doc, "Delete element"))
-                    // {
-                    //     t.Start();
-                    //
-                    //     foreach (ElementId id in deletEl)
-                    //     {
-                    //         doc.Delete(id);
-                    //     }
-                    //
-                    //     t.Commit();
-                    // }
-                    //
-                    // #endregion
-
-
-                    IList<Element> conduintsElements = conduintsFilter
-                        .OfCategory(BuiltInCategory.OST_Conduit)
-                        .WhereElementIsNotElementType()
-                        .ToElements();
+                    XYZ x, y;
+                    double pointX, pointY, pointZ, degree;
 
                     #region Create
 
-                    XYZ x = null;
-                    XYZ y = null;
-                    double pointX = 0;
-                    double pointY = 0;
-                    double degree = 0;
-                    foreach (var element in efCs)
+                    foreach (var strut in strutElements)
                     {
-                        LocationPoint locationPoint = element.Location as LocationPoint;
+                        LocationPoint locationPoint = strut.Location as LocationPoint;
 
-                        // var name = element.Name;
                         pointX = locationPoint.Point.X;
                         pointY = locationPoint.Point.Y;
-                        var pointZ = locationPoint.Point.Z;
+                        pointZ = locationPoint.Point.Z;
 
-                        degree = locationPoint.Rotation;
-                        if (degree < 2.00)
+                        foreach (var conduints in conduintsElements)
                         {
-                            degree *= 2;
-                        }
-
-
-                        foreach (var element2 in conduintsElements)
-                        {
-                            LocationCurve curve = element2.Location as LocationCurve;
+                            LocationCurve curve = conduints.Location as LocationCurve;
 
                             x = curve.Curve.GetEndPoint(0);
                             y = curve.Curve.GetEndPoint(1);
-                            //MM_StrutClearance
+
+                            Line line = curve.Curve as Line;
+                            if (line.Direction.X < -1)
+                            {
+                                degree = Math.Acos(line.Direction.X);
+                            }
+                            else
+                            {
+                                degree = Math.Asin(line.Direction.X) + 90 * Math.PI / 180;
+                            }
+
 
                             #region Diameter definition
 
                             string _parameterSize =
-                                element2.LookupParameter("Diameter(Trade Size)").AsValueString();
+                                conduints.LookupParameter("Diameter(Trade Size)").AsValueString();
                             string sizeFitting = "";
                             if (_parameterSize == "3\"")
                             {
@@ -154,12 +115,16 @@ namespace InstallConduitsStrap.Tools
                                         pointZstate = x.Z;
                                     }
 
-                                    double rotationCellValue = degree + 90 * Math.PI / 180;
+                                    //double rotationCellValue = degree + 90 * Math.PI / 180;
+
+                                    double rotationCellValue = degree;
+
+
                                     string symbolName = "MM_Conduit_Strap";
 
                                     FilteredElementCollector allFamilySymbols = new FilteredElementCollector(doc)
                                         .OfClass(typeof(ElementType));
-                                    // FamilySymbol selectedFamilySymbol = allFamilySymbols
+
                                     var elementType = allFamilySymbols
                                             .OfCategory(BuiltInCategory.OST_ConduitFitting)
                                             .Cast<ElementType>()
@@ -198,8 +163,7 @@ namespace InstallConduitsStrap.Tools
                                         StructuralType famStructuralType = StructuralType.NonStructural;
 
                                         newFamilyInstance = doc.Create.NewFamilyInstance(placementPoint,
-                                            elementType,
-                                            famStructuralType);
+                                            elementType, famStructuralType);
                                         newFamilyInstance.LookupParameter("Nominal Radius")
                                             .SetValueString(sizeFitting);
                                         if (!positionZ)
@@ -239,6 +203,39 @@ namespace InstallConduitsStrap.Tools
             }
 
             return Result.Succeeded;
+        }
+
+
+        public static XYZ LinePlaneIntersection(Line line, Plane plane, out double lineParameter)
+        {
+            XYZ planePoint = plane.Origin;
+            XYZ planeNormal = plane.Normal;
+            XYZ linePoint = line.GetEndPoint(0);
+
+            XYZ lineDirection = (line.GetEndPoint(1)
+                                 - linePoint).Normalize();
+
+            // Is the line parallel to the plane, i.e.,
+            // perpendicular to the plane normal?
+
+            if (IsZero(planeNormal.DotProduct(lineDirection)))
+            {
+                lineParameter = double.NaN;
+                return null;
+            }
+
+            lineParameter = (planeNormal.DotProduct(planePoint)
+                             - planeNormal.DotProduct(linePoint))
+                            / planeNormal.DotProduct(lineDirection);
+
+            return linePoint + lineParameter * lineDirection;
+        }
+
+        public const double _eps = 1.0e-9;
+
+        public static bool IsZero(double a, double tolerance = _eps)
+        {
+            return tolerance > Math.Abs(a);
         }
 
         public static IList<Element> FindElement(Document doc, ElementId sheetId, Type targetType, string targetName)

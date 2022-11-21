@@ -17,9 +17,9 @@ namespace InstallConduitsStrap
 
             #region Button
 
-            PushButtonData Install = new PushButtonData(nameof(Tools.InstallStrap),
+            PushButtonData Install = new PushButtonData(nameof(Tools.NewInstall),
                 "Install Conduits \n Strap", path,
-                typeof(Tools.InstallStrap).FullName)
+                typeof(Tools.NewInstall).FullName)
             {
                 LargeImage = Common.IconManager.GetIcon("install_32px.ico"),
                 Image = Common.IconManager.GetIcon("install_16px.ico")

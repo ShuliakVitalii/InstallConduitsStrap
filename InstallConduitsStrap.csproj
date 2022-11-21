@@ -62,6 +62,7 @@
     <Compile Include="RevitUI\RibbonPanelOverrides.cs" />
     <Compile Include="Tools\InstallStrap.cs" />
     <Compile Include="Tools\MyPreProcessor.cs" />
+    <Compile Include="Tools\NewInstall.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="InstallConduitsStrap.addin" />
